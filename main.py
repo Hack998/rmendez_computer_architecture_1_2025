@@ -120,7 +120,7 @@ class ImageQuadrantApp:
         """
         if self.selected_quadrant is not None:
             self.save()
-            self.execute_assambly()
+            self.execute_assembly()
             self.read()
         else:
             tk.messagebox.showinfo("Información", "Por favor, selecciona un cuadrante primero.")
@@ -200,6 +200,7 @@ class ImageQuadrantApp:
 
         matriz_uint8 = matriz_decimal.astype(np.uint8)
         new_image = Image.fromarray(matriz_uint8)
+        new_image.save("Resultado.jpg")
 
         self.result_image = new_image
         self.tk_result_image = ImageTk.PhotoImage(self.result_image)
