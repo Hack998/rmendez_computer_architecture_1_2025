@@ -6,7 +6,7 @@ import numpy as np
 class ImageQuadrantApp:
     def __init__(self, master):
         self.master = master
-        master.title("Visor de Cuadrantes de Imagen")
+        master.title("Interpolador Bilineal para escalar cuadrante")
 
         self.original_image_path = None
         self.original_image = None
@@ -56,7 +56,7 @@ class ImageQuadrantApp:
         self.counter_button.pack()
 
         # Marco para visualizar otra imagen
-        self.frame_other_image = tk.LabelFrame(master, text="Resultado (200x200)")
+        self.frame_other_image = tk.LabelFrame(master, text="Resultado (298x298)")
         self.frame_other_image.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
         self.other_image_label = tk.Label(self.frame_other_image)
@@ -69,7 +69,7 @@ class ImageQuadrantApp:
                 self.original_image = Image.open(file_path).resize((400, 400))
                 self.tk_original_image = ImageTk.PhotoImage(self.original_image)
                 self.original_image_label.config(image=self.tk_original_image)
-                self.original_image_label.image = self.tk_original_image # Mantener referencia
+                self.original_image_label.image = self.tk_original_image 
                 self.original_image_path = file_path
             except Exception as e:
                 tk.messagebox.showerror("Error", f"No se pudo cargar la imagen: {e}")
@@ -95,7 +95,7 @@ class ImageQuadrantApp:
                     self.selected_quadrant_data = np.array(quadrant.convert('L'))
                     self.selected_quadrant_image = ImageTk.PhotoImage(quadrant)
                     self.quadrant_image_label.config(image=self.selected_quadrant_image)
-                    self.quadrant_image_label.image = self.selected_quadrant_image # Mantener referencia
+                    self.quadrant_image_label.image = self.selected_quadrant_image
                 else:
                     self.selected_quadrant = None
                     tk.messagebox.showerror("Error", "El número de cuadrante debe estar entre 1 y 16.")
@@ -120,8 +120,8 @@ class ImageQuadrantApp:
         subcuadros_guardados = 0
         try:
             with open(file_path, "wb") as f:  # Abrir en modo binario ("wb")
-                for i in range(0, n_filas - 1, 2):
-                    for j in range(0, n_cols - 1, 2):
+                for i in range(0, n_filas - 1):
+                    for j in range(0, n_cols - 1):
                         subcuadro = self.selected_quadrant_data[i:i+2, j:j+2]
                         for fila in subcuadro:
                             for valor in fila:
@@ -136,16 +136,34 @@ class ImageQuadrantApp:
         try:
             return int(hex_str, 16)
         except ValueError:
-            return None # O algún otro valor para indicar el error
+            return None
 
         
 
     def read(self):
 
-        matriz = np.full((200, 200), "00", dtype='<U2')
+        matriz = np.full((298, 298), "00", dtype='<U2')
+
+        file_path = "r.img"
+        try:
+            with open(file_path, "rb")as f:
+                contenido = f.read()
+                hex_leido = [f"{byte:02x}" for byte in contenido]
+        except:
+            print("No se encontro")
+
+        contador = 0
+
+        for x_big in range (0, 1): # Esta 99
+            for y_big in range(0, 99): # Esta 99
+                for x in range(0, 4):
+                    for y in range(0, 4):
+                        matriz[x+x_big*3][y+y_big*3] = hex_leido[contador]
+                        contador += 1
+                contador = 0
 
         matriz[4][4] = "FF"
-        print(matriz[:5, :5])
+        #print(matriz[0:5, -10:])
 
         hex_to_dec_vectorized = np.vectorize(ImageQuadrantApp.hex_to_dec)
         matriz_decimal = hex_to_dec_vectorized(matriz)
@@ -156,7 +174,7 @@ class ImageQuadrantApp:
         self.other_image = new_image
         self.tk_other_image = ImageTk.PhotoImage(self.other_image)
         self.other_image_label.config(image=self.tk_other_image)
-        self.other_image_label.image = self.tk_other_image # Mantener referencia
+        self.other_image_label.image = self.tk_other_image
 
 if __name__ == "__main__":
     root = tk.Tk()
